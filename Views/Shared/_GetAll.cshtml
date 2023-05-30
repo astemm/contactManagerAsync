@@ -1,0 +1,230 @@
+@model IEnumerable<ContactManager.Models.Employee>
+   <script>
+    var deleteRow;
+    var editRow;
+    var saveRow;
+    var cancelEdit;
+    var validateUpdateRow;
+    var filterRows;
+
+    $(document).ready(function () {
+        $("#btnFilter").click(function () {
+            var filter = $("#term").val();
+            var header;
+            header = $("#empList").children("option:selected").val(); //
+            filterRows(header, filter)
+            });
+
+        $("#sortList").change(function () {
+            header = $("#sortList").children("option:selected").val();
+            $("#btnFilter").parent().parent().find("#createTable").load('@Url.Content("/Employee/SortEmployees")', { column: header});
+        });
+
+        filterRows=function (header1, term1) {
+            var input, filter, table, tr, td, i, txtValue, num, checked, filterChecked;
+            var columnsDict = {
+                "Name":0,
+                "DateOfBirth":1,
+                "Married":2,
+                "Phone":3,
+                "Salary":4,
+            };
+            filter = term1.toUpperCase();
+            table = document.getElementById("tableEmps");
+            tr = table.getElementsByTagName("tr");
+            num=columnsDict[header1];
+            console.log(num);
+            console.log(header1);
+            for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[num];
+            if (td) {
+            txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+            } else {
+            tr[i].style.display = "none";
+            }
+            if (num==2) {
+                filterChecked=(filter=="TRUE")?true:false;
+                checked=td.getElementsByTagName('input')[0].checked;
+                console.log("fchecked: "+filterChecked);
+                console.log("checkeddd: "+td.getElementsByTagName('input')[0].checked);
+                if ((filterChecked && checked) || (!filterChecked && !checked)) {
+                    tr[i].style.display = "";
+                }
+                else {
+                    tr[i].style.display = "none";
+                }
+             }
+           }
+         }
+        }
+  
+        editRow = function (i) {
+            $('#btnEdit_' + i.toString()).hide();
+            $('#btnDelete_' + i.toString()).hide();
+            $('#Name_' + i.toString()).hide();
+            $('#DOB_' + i.toString()).hide();
+            $('#Married_' + i.toString()).hide();
+            $('#Phone_' + i.toString()).hide();
+            $('#Salary_' + i.toString()).hide();
+            $('#btnUpdate_' + i.toString()).show();
+            $('#btnCancel_' + i.toString()).show();
+            $('#ttxtName_' + i.toString()).show();
+            $('#ttxtDOB_' + i.toString()).show();
+            $('#ttxtMarried_' + i.toString()).show();
+            $('#ttxtPhone_' + i.toString()).show();
+            $('#ttxtSalary_' + i.toString()).show();
+        }
+
+        cancelEdit = function (i) {
+            $('#btnEdit_' + i.toString()).show();
+            $('#btnDelete_' + i.toString()).show();
+            $('#Name_' + i.toString()).show();
+            $('#DOB_' + i.toString()).show();
+            $('#Married_' + i.toString()).show();
+            $('#Phone_' + i.toString()).show();
+            $('#Salary_' + i.toString()).show();
+            $('#btnUpdate_' + i.toString()).hide();
+            $('#btnCancel_' + i.toString()).hide();
+            $('#ttxtName_' + i.toString()).hide();
+            $('#ttxtDOB_' + i.toString()).hide();
+            $('#ttxtMarried_' + i.toString()).hide();
+            $('#ttxtPhone_' + i.toString()).hide();
+            $('#ttxtSalary_' + i.toString()).hide();
+        }
+
+        saveRow = function (i) {
+            if (!validateUpdateRow(i)) return;
+            var item = {};
+                item["EmployeeId"] = i;
+                var newName = $("#txtName_" + i.toString()).val(); item["Name"] = newName;
+                var newDOB = $("#txtDOB_" + i.toString()).val(); var parseDate = newDOB.split(".");
+                item["DateOfBirth"] = newDOB;
+                var newMarried = $("#txtMarried_" + i.toString()).prop('checked');; item["Married"] = Boolean(newMarried);
+                var newPhone = $("#txtPhone_" + i.toString()).val(); item["Phone"] = newPhone;
+                var newSalary = $("#txtSalary_" + i.toString()).val(); newSalary2 = newSalary.replace(",",".");
+                item["Salary"] = newSalary;
+                var jsonItem = JSON.stringify(item);
+                console.log(item);
+                $("#btnFilter").parent().parent().find("#createTable").load('@Url.Content("/Employee/Edit")', item);
+        }
+
+        deleteRow=function (n) {
+            $("#btnFilter").parent().parent().find("#createTable").load('@Url.Content("/Employee/Delete")', { id: n });
+        }
+
+        validateUpdateRow = function (i) {
+            var isValid = true;
+            var msg = "";
+
+            var Name = $("#txtName_" + i.toString()).val();
+            var DOB = $("#txtDOB_" + i.toString()).val();
+            var Phone = $("#txtPhone_" + i.toString()).val();
+            var Salary = $("#txtSalary_" + i.toString()).val();
+    
+            if (Name == "") {
+                msg += "Name at id:" + i + " is required. " + "\n";
+                isValid = false;
+            }
+
+            if (DOB == "") {
+                msg += "DateOfBirth at id:" + i + " is required. " + "\n";
+                isValid = false;
+            }
+
+            if (Phone == "") {
+                msg += "Phone number at id:" + i + " is required. " + "\n";
+                isValid = false;
+            }
+
+            if (Salary == "") {
+                msg += "Salary field at id:" + i + " is empty. " + "\n";
+                isValid = false;
+            }
+            if (msg!="") alert(msg);
+            return isValid;
+        }
+
+    });
+</script>
+<select name="emps" id="empList">
+        <option value="Name">Name</option>
+        <option value="DateOfBirth">DateOfBirth</option>
+        <option value="Married">Married</option>
+        <option value="Phone">Phone</option>
+        <option value="Salary">Salary</option>
+    </select>
+    <input type="text" id="term" />
+    <input type="submit" id="btnFilter" value="Filter"/>
+    <label> Sort by</label>
+    <select name="emps" id="sortList">
+        <option value="field:">field:</option>
+        <option value="Name">Name</option>
+        <option value="DateOfBirth">DateOfBirth</option>
+        <option value="Married">Married</option>
+        <option value="Phone">Phone</option>
+        <option value="Salary">Salary</option>
+        <option value="NoSorting">No Sorting</option>
+    </select>
+
+
+    <table id="tableEmps">
+        <tr id="hRow">
+            <th id="hName">
+                @Html.DisplayNameFor(model=>model.Name)
+            </th>
+            <th id="hDOB">
+                @Html.DisplayNameFor(model=>model.DateOfBirth)
+            </th>
+            <th id="hMarried">
+                @Html.DisplayNameFor(model=>model.Married)
+            </th>
+            <th id="hPhone">
+                @Html.DisplayNameFor(model=>model.Phone)
+            </th>
+            <th id="hSalary">
+                @Html.DisplayNameFor(model=>model.Salary)
+            </th>
+        </tr>
+        <tbody>
+            @if (Model!= null) {
+                foreach (var item in Model)  //@foreach
+        {  
+            <tr id="Tr_@item.EmployeeId.ToString()">
+                <td id="Name_@item.EmployeeId.ToString()">
+                    @Html.DisplayFor(modelItem=>item.Name)
+                </td>
+                <td id="DOB_@item.EmployeeId.ToString()">
+                    @Html.DisplayFor(modelItem=>item.DateOfBirth)
+                </td>
+                <td id="Married_@item.EmployeeId.ToString()">
+                    @Html.DisplayFor(modelItem=>item.Married)
+                </td>
+                <td id="Phone_@item.EmployeeId.ToString()">
+                    @Html.DisplayFor(modelItem=>item.Phone)
+                </td>
+                <td id="Salary_@item.EmployeeId.ToString()">
+                    @Html.DisplayFor(modelItem=>item.Salary)
+                </td>
+                <td id="ttxtName_@item.EmployeeId.ToString()" style="display:none;">
+                    <input type='text' id="txtName_@item.EmployeeId.ToString()" size="16" value="@item.Name" /></td>
+                <td id="ttxtDOB_@item.EmployeeId.ToString()" style="display:none;">
+                    <input type='text' id="txtDOB_@item.EmployeeId.ToString()" size="7" value="@item.DateOfBirth.ToString("dd.MM.yyyy")" /></td>
+                <td id="ttxtMarried_@item.EmployeeId.ToString()" style="display:none;">
+                    <input type='checkbox' id="txtMarried_@item.EmployeeId.ToString()" value="@item.Married" /></td>
+                <td id="ttxtPhone_@item.EmployeeId.ToString()" style="display:none;">
+                    <input type='text' id="txtPhone_@item.EmployeeId.ToString()" size="9" value="@item.Phone" /></td>
+                 <td id="ttxtSalary_@item.EmployeeId.ToString()" style="display:none;">
+                     <input type='text' id="txtSalary_@item.EmployeeId.ToString()" size="7" value="@item.Salary" /></td>
+                <td>
+                     <button type="submit" id="btnEdit_@item.EmployeeId.ToString()" value="Edit" onclick="editRow(@item.EmployeeId)">Edit</button>
+                     <button type="submit" id="btnUpdate_@item.EmployeeId.ToString()" class="update" value="Update" style="display:none;" onclick="saveRow(@item.EmployeeId)">Update</button>
+                     <button type="submit" id="btnDelete_@item.EmployeeId.ToString()" value="Delete" onclick="deleteRow(@item.EmployeeId)">Delete</button>
+                     <button type="submit" id="btnCancel_@item.EmployeeId.ToString()" class="update" value="Cancel" style="display:none;" onclick="cancelEdit(@item.EmployeeId)">Cancel</button>
+                </td>  
+            </tr>
+        } 
+        }
+        </tbody>
+  </table>

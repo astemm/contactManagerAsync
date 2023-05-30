@@ -1,0 +1,63 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Contact Manager</title>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery/dist/jquery.unobtrusive-ajax.js"></script> 
+    <script>
+        var deleteRow;
+        $(document).ready(function () {
+            $("#btnFileUpload").click(function () {
+                var files = $("#fileSelect").get(0).files;
+                var fileData = new FormData();
+                for (var i = 0; i < files.length; i++) {
+                    fileData.append("fileSelect", files[i]);
+                }
+                console.log(files);
+                $.ajax({
+                    type: "POST",
+                    url: "/Employee/Upload",
+                    contentType: false, // Not to set any content header
+                    processData: false, // Not to process data
+                    data: fileData,
+                    success: function (result) {
+                        var newHtml = '';
+                        newHtml = '<div>' + result + '</div>';
+                        $("#uploadCSV").html(newHtml);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        $("#uploadCSV").html('<div>' + error.statusText + '</div>');
+                    }
+                });
+            });
+        });
+</script>
+<link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+</head>
+<body>
+    <span>Upload CVS file and <br />
+         manipulate data</span>
+    <br />
+    <div>
+                       <input type="file" name="fileToUpload" id="fileSelect" value="Choose CVS file"/>
+                       <br />
+                       <br />
+                       <input type="submit" id="btnFileUpload" value="Upload .CVS Employee file" class="btn btn-primary" />
+    </div>
+    <br />
+    <div id="uploadCSV">
+    </div>
+    <br />
+    <form asp-action="GetAll" asp-controller="Employee" data-ajax-method="GET" data-ajax="true" data-ajax-update="#createTable">
+    <input type="submit" value="Show Employees" class="btn btn-primary" />
+    </form>
+    <div id="createTable">
+    </div>
+    
+</body>
+</html>
