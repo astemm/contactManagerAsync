@@ -17,8 +17,61 @@
 
         $("#sortList").change(function () {
             header = $("#sortList").children("option:selected").val();
-            $("#btnFilter").parent().parent().find("#createTable").load('@Url.Content("/Employee/SortEmployees")', { column: header});
+            //$("#btnFilter").parent().parent().find("#createTable").load('@Url.Content("/Employee/SortEmployees")', { column: header});
+            sortTable(header);
         });
+
+        function sortTable(header0) {
+           var table, rows, switching, i, x, y, shouldSwitch;
+            var columnsDict = {
+                "Name":0,
+                "DateOfBirth":1,
+                "Married":2,
+                "Phone":3,
+                "Salary":4,
+            };
+           table = document.getElementById("tableEmps");
+           switching = true;
+           num=columnsDict[header0];
+           console.log(columnsDict[header0]);
+           while (switching) {
+             switching = false;
+             rows = table.rows;
+
+             for (i = 1; i < (rows.length - 1); i++) {
+               shouldSwitch = false;
+
+               if (rows[i + 1].getElementsByTagName("TD")[num]==undefined) continue;
+
+               x = rows[i].getElementsByTagName("TD")[num];
+               y = rows[i + 1].getElementsByTagName("TD")[num];
+
+                if (num==1) { //Date column
+                   x = rows[i].getElementsByTagName("TD")[num].innerHTML.split('.')
+               .reverse().join(', ');
+                   y = rows[i+1].getElementsByTagName("TD")[num].innerHTML.split('.')
+               .reverse().join(', ');
+
+                if (x > y) {
+                 shouldSwitch = true;
+                 break;
+                 }
+               }
+               
+               else { 
+                   if  (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                 shouldSwitch = true;
+                 break;
+               }
+              }
+             } 
+
+             if (shouldSwitch) {
+               rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+               switching = true;
+             }
+           } //while
+         }
 
         filterRows=function (header1, term1) {
             var input, filter, table, tr, td, i, txtValue, num, checked, filterChecked;
@@ -165,7 +218,6 @@
         <option value="Married">Married</option>
         <option value="Phone">Phone</option>
         <option value="Salary">Salary</option>
-        <option value="NoSorting">No Sorting</option>
     </select>
 
 
