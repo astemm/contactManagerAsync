@@ -112,7 +112,37 @@
            }
          }
         }
-  
+
+        var tempDict = {
+                "Name":"",
+                "DateOfBirth":"",
+                "Married":false,
+                "Phone":"",
+                "Salary":"",
+            };
+
+        setRestoreValues=function(i) {
+            tempDict["Name"] = $("#txtName_" + i.toString()).val();
+            tempDict["DateOfBirth"] = $("#txtDOB_" + i.toString()).val();
+            tempDict["Phone"] = $("#txtPhone_" + i.toString()).val();
+            tempDict["Salary"] = $("#txtSalary_" + i.toString()).val();
+        }
+
+        restoreInputValues=function(i) {
+               $("#txtName_" + i.toString()).val(tempDict["Name"]);
+               $("#txtDOB_" + i.toString()).val(tempDict["DateOfBirth"]);
+               $("#txtPhone_" + i.toString()).val(tempDict["Phone"]);
+               $("#txtSalary_" + i.toString()).val(tempDict["Salary"]);
+        }
+
+        nullifyRestoreValue=function() {
+            tempDict["Name"]="";
+            tempDict["DateOfBirth"] = "";
+            tempDict["Phone"] = "";
+            tempDict["Salary"] = "";
+        }   
+
+
         editRow = function (i) {
             $('#btnEdit_' + i.toString()).hide();
             $('#btnDelete_' + i.toString()).hide();
@@ -128,6 +158,7 @@
             $('#ttxtMarried_' + i.toString()).show();
             $('#ttxtPhone_' + i.toString()).show();
             $('#ttxtSalary_' + i.toString()).show();
+            setRestoreValues(i);
         }
 
         cancelEdit = function (i) {
@@ -145,10 +176,16 @@
             $('#ttxtMarried_' + i.toString()).hide();
             $('#ttxtPhone_' + i.toString()).hide();
             $('#ttxtSalary_' + i.toString()).hide();
+            restoreInputValues(i);
+            nullifyRestoreValue();
         }
 
         saveRow = function (i) {
-            if (!validateUpdateRow(i)) return;
+            if (!validateUpdateRow(i)) {
+                restoreInputValues(i);
+                return;
+            }
+            
             var item = {};
                 item["EmployeeId"] = i;
                 var newName = $("#txtName_" + i.toString()).val(); item["Name"] = newName;
