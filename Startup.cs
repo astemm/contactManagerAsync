@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using ContactManager.Models;
+using ContactManager.Services;
 
 namespace ContactManager
 {
@@ -34,7 +35,7 @@ namespace ContactManager
             });
             services.AddDbContext<EmployeeContext>(options =>  
             options.UseSqlServer(Configuration.GetConnectionString("EmployeeDbContext")));
-
+            services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddMvc();
         }
 

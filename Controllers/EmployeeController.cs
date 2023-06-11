@@ -1,3 +1,4 @@
+using System.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,60 +7,34 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using System.Data;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ContactManager.Models;
+using ContactManager.Services;
 
 namespace ContactManager.Controllers
 {
     public class EmployeeController : Controller
     {
-        private EmployeeContext context;
-        private Converter converter = new Converter();
-        
-        private string fileName;
+        private IEmployeeService employeeService;
 
-        public EmployeeController(EmployeeContext context) {
-           this.context=context;
+        public EmployeeController(IEmployeeService empService) {
+           this.employeeService=empService;
         }
         
-        // GET: /Employee/
         public ActionResult Index()
         {
             return View();
         }
 
-         public ActionResult GetAll()
+        public async Task<ActionResult> GetAll()
         {
-            var list = context.Employees.ToList();
+            var list = await employeeService.GetEmployees();
             return PartialView("_GetAll", list);
         }
 
-        public ActionResult SortEmployees(string column)
-        {
-            IList<Employee> emps = null;
-            if (column.Equals("Name")) {emps = context.Employees.AsEnumerable().OrderBy(e => e.Name).ToList<Employee>(); }
-            else if (column.Equals("DateOfBirth")) {emps = context.Employees.AsEnumerable().OrderBy(e => e.DateOfBirth).ToList<Employee>(); }
-            else if (column.Equals("Married")) {emps = context.Employees.AsEnumerable().OrderBy(e => e.Married).ToList<Employee>(); }
-            else if (column.Equals("Phone")) {emps = context.Employees.AsEnumerable().OrderBy(e => e.Phone).ToList<Employee>(); }
-            else if (column.Equals("Salary")) {emps = context.Employees.AsEnumerable().OrderBy(e => e.Salary).ToList<Employee>(); }
-            else if (column.Equals("NoSorting")) {emps = context.Employees.ToList<Employee>(); }
-            return PartialView("_GetAll", emps);
-        }
-
-        private IList<Employee> GetEmployees()
-        {
-            return context.Employees.ToList();
-        }
-
-        private void AddEmployee(Employee emp)
-        {
-            context.Employees.Add(emp);
-            context.SaveChanges();
-        }
-
         [HttpPost]
-        public ActionResult Upload(IFormFile uploadedFile)
+        public async Task<ActionResult> Upload(IFormFile uploadedFile)
         {
             IFormFile file=null;
             try
@@ -68,8 +43,9 @@ namespace ContactManager.Controllers
                 if (file==null) throw new NullReferenceException();
        
             }
-            catch (Exception ex) { return Content("No file chosen"); }
-
+            catch (Exception ex) { return Content("No file1 chosen"); }
+            await employeeService.Upload(file);
+            /* 
             if (file != null && file.Length > 0)
             {
                 fileName = file.FileName;
@@ -83,25 +59,19 @@ namespace ContactManager.Controllers
                     AddEmployee(e);
                 }
             }
-            catch (Exception ex)  { return Content("Conversion error"); }
+            catch (Exception ex)  { return Content("Conversion error"); } */
 
-            return Content("File " + fileName + " uploaded");
+            return Content("File " + file.FileName + " uploaded"); 
         }
 
         [HttpPost]     //Called with post jquery.Load method
-        public ActionResult Edit(Employee newEmployee)
+        public async Task<ActionResult> Edit(Employee newEmployee)
         {
-            Employee e = context.Employees.Find(newEmployee.EmployeeId);
-            e.Name = newEmployee.Name;
-            e.DateOfBirth = Convert.ToDateTime(newEmployee.DateOfBirth).Date;
-            e.Married = newEmployee.Married;
-            e.Phone=newEmployee.Phone;
-            e.Salary=Convert.ToDecimal(newEmployee.Salary);
             try
             {
-                context.Entry(e).State = EntityState.Modified;
-                context.SaveChanges();
-                return PartialView("_GetAll", GetEmployees());
+                await employeeService.EditEmployee(newEmployee);
+                var employees=await employeeService.GetEmployees();
+                return PartialView("_GetAll", employees);
             }
             catch (Exception ex) { 
                 return Content("There is no such employee");
@@ -109,27 +79,19 @@ namespace ContactManager.Controllers
         }
 
         [HttpPost]   //Called with post jquery.Load method
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            Console.WriteLine("iddd: "+id);
-            Employee e = context.Employees.Find(id);
             try
             {
-                context.Employees.Remove(e);
-                context.SaveChanges();
-                return PartialView("_GetAll", GetEmployees());
+                await employeeService.DeleteEmployee(id);
+                var employees=await employeeService.GetEmployees();
+                return PartialView("_GetAll", employees);
             }
             catch (Exception ex)
             {
                 return Content("There is no such employee");
             }
         }
-
-        
-
-
-
-
 
     }
 }
