@@ -40,27 +40,10 @@ namespace ContactManager.Controllers
             try
              {   
                 file = Request.Form.Files.FirstOrDefault();
-                if (file==null) throw new NullReferenceException();
-       
+                if (file==null) return Content("No file chosen");
+                await employeeService.Upload(file);
             }
-            catch (Exception ex) { return Content("No file1 chosen"); }
-            await employeeService.Upload(file);
-            /* 
-            if (file != null && file.Length > 0)
-            {
-                fileName = file.FileName;
-            }
-
-            try
-            {
-                IList<Employee> emps = converter.convertFromCSV(file);
-                foreach (Employee e in emps)
-                {
-                    AddEmployee(e);
-                }
-            }
-            catch (Exception ex)  { return Content("Conversion error"); } */
-
+            catch (Exception ex) { return Content(ex.Message); }
             return Content("File " + file.FileName + " uploaded"); 
         }
 
@@ -74,7 +57,7 @@ namespace ContactManager.Controllers
                 return PartialView("_GetAll", employees);
             }
             catch (Exception ex) { 
-                return Content("There is no such employee");
+                return Content(ex.Message);
             }
         }
 
@@ -89,7 +72,7 @@ namespace ContactManager.Controllers
             }
             catch (Exception ex)
             {
-                return Content("There is no such employee");
+                return Content(ex.Message);
             }
         }
 

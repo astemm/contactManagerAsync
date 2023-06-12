@@ -80,8 +80,7 @@ namespace ContactManager.Models
                 csv.Configuration.RegisterClassMap<EmployeeMap>();
                 csv.Configuration.HasHeaderRecord = false;
                 csv.Configuration.TrimOptions = TrimOptions.Trim;  
-                IEnumerable<Employee> emps = csv.GetRecords<Employee>();
-                employees=emps.ToList();
+                employees = csv.GetRecords<Employee>().ToList();
             }
             }
             return employees;

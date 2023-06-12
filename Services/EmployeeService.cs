@@ -59,6 +59,12 @@ namespace ContactManager.Services
                 fileName = file.FileName;
             }
 
+            string extension = Path.GetExtension(fileName);
+            if (!(String.Equals(extension, ".csv") || String.Equals(extension, ".txt")))
+            {
+                throw new Exception("No correct file format chosen");
+            } 
+
             try
             {
                 //Task<IList<Employee>> task =Task.FromResult<IList<Employee>>(await converter.convertFromCSVAsync(file));
@@ -71,7 +77,7 @@ namespace ContactManager.Services
                     await AddEmployee(e);
                 }
             }
-            catch (Exception ex)  { throw new Exception (ex.InnerException.Message+ "Conversion error"); }
+            catch (Exception ex)  { throw new Exception (ex.InnerException.Message); }
         }
 
         public async Task AddEmployee(Employee emp)
@@ -94,13 +100,12 @@ namespace ContactManager.Services
                await context.SaveChangesAsync();
             }
             catch (Exception ex) { 
-                throw new Exception("There is no such employee");
+                throw new Exception(ex.Message);
             }
         }
 
         public async Task DeleteEmployee(int id)
         {
-            Console.WriteLine("iddd: "+id);
             Employee e = await context.Employees.FindAsync(id);
             try
             {
@@ -109,7 +114,7 @@ namespace ContactManager.Services
             }
             catch (Exception ex)
             {
-                throw new Exception("There is no such employee");
+                throw new Exception(ex.Message);
             }
         }
 
@@ -131,7 +136,6 @@ namespace ContactManager.Services
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
 
     }
 }
